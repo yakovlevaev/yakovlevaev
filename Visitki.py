@@ -2,7 +2,7 @@ import pandas as pd
 import gspread_pandas
 
 path = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScsLKFhcW1iLORA-zePnDSoZfat-BNSeKt1c1XGoNAVoGP7Xqj5OE8q553A-QvrzvpHeQTvv8DBphW/pub?output=xlsx'
-df0 = pd.read_excel(path, parse_dates=['Зарегистрирован'], engine='openpyxl')
+df0 = pd.read_excel(path, parse_dates=['Зарегистрирован'])
 
 df = df0.copy()
 
