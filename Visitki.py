@@ -2,9 +2,7 @@ import pandas as pd
 import gspread_pandas
 
 path = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScsLKFhcW1iLORA-zePnDSoZfat-BNSeKt1c1XGoNAVoGP7Xqj5OE8q553A-QvrzvpHeQTvv8DBphW/pub?output=csv'
-df0 = pd.read_csv(path, parse_dates=['Зарегистрирован'])
-
-df = df0.copy()
+df = pd.read_csv(path, parse_dates=['Зарегистрирован'])
 
 def udf_phone(phone):
     if phone.startswith('9'):
@@ -15,23 +13,19 @@ def udf_phone(phone):
         return phone
     
 df1 = (df
-    .assign(Источник = 'Визитки', #df.Роль.apply(lambda x: 'Клуб риелторов' if x == 'Агентство недвижимости' else 'Визитки'),
+    .assign(Источник = 'Визитки',
             Email = df['E-mail'].str.lower(),
             ФИО = df[['Фамилия', 'Имя', 'Отчество']].apply(' '.join, 1),
-            мобильныйтелефон = df['Номер телефона'].str.replace('[\s"+()-]', '')
-                                                   .apply(udf_phone),
+            мобильныйтелефон = df['Номер телефона'].str.replace('[\s"+()-]', '').apply(udf_phone),
             Тип = 'Контактное лицо',
             Типконтактноголица = df.Роль.apply(lambda x: 'Частный маклер' if x == 'Частный риелтор' else x),
-            Контрагент = df.Роль.apply(lambda x: '' if x == 'Частный риелтор' else 'Уточнить, ручная загрузка из Excel') 
-           )
+            Контрагент = df.Роль.apply(lambda x: '' if x == 'Частный риелтор' else 'Уточнить, ручная загрузка из Excel'))
     .drop(columns='Город') 
     .rename(columns={'Событие': 'Комментарий к источнику', 
                      'Зарегистрирован': 'Дата создания',
                      'Город.1': 'Город',
-                     'Типконтактноголица': 'Тип контактного лица'
-            })
-    .loc[:, ['Источник', 'Комментарий к источнику', 'Дата создания', 'Email', 'ФИО', 
-             'мобильныйтелефон', 'Город', 'Тип', 'Тип контактного лица', 'Контрагент']]    
+                     'Типконтактноголица': 'Тип контактного лица'})
+    .loc[:, ['Источник', 'Комментарий к источнику', 'Дата создания', 'Email', 'ФИО', 'мобильныйтелефон', 'Город', 'Тип', 'Тип контактного лица', 'Контрагент']]    
 )
 
 df_an = df1[df1["Тип контактного лица"] == "Агентство недвижимости"]
@@ -39,9 +33,7 @@ df_others = df1[df1["Тип контактного лица"] != "Агентст
 
 config = gspread_pandas.conf.get_config('/home/yakovlevaev/', 'm2-main-cd9ed0b4e222.json') 
 
-udf_sheet = lambda sheet: gspread_pandas.Spread('1-NenYnXa7K9CL6iXNauJU9G_BDveGS_vlGTvXJ2PjM8', 
-                                                sheet=sheet, config=config, create_sheet=True)
-
+udf_sheet = lambda sheet: gspread_pandas.Spread('1-NenYnXa7K9CL6iXNauJU9G_BDveGS_vlGTvXJ2PjM8', sheet=sheet, config=config, create_sheet=True)
 udf_to_sheet = lambda df, sheet: sheet.df_to_sheet(df, replace=True, index=False)
 
 an = udf_sheet('АН')
